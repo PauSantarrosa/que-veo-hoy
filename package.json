@@ -1,0 +1,25 @@
+{
+  "name": "que-veo-hoy-project",
+  "version": "1.0.0",
+  "description": "aplicacion para recomendar peliculas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PauSantarrosa/que-veo-hoy.git"
+  },
+  "author": "Paula Santarrosa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PauSantarrosa/que-veo-hoy/issues"
+  },
+  "homepage": "https://github.com/PauSantarrosa/que-veo-hoy#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mysql": "^2.18.1"
+  }
+}

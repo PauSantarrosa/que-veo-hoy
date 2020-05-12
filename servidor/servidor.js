@@ -16,6 +16,7 @@ app.use(bodyParser.json());
 
 app.get('/peliculas',finderData.retriveAllMovies);
 app.get('/generos',finderData.retriveAllGender);
+//app.get('peliculas/:id',finderData.retriveMovieById);
 
 //seteamos el puerto en el cual va a escuchar los pedidos la aplicación
 var puerto = '8080';

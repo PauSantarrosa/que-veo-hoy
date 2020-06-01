@@ -32,13 +32,17 @@ function retriveAllMovies(req, res) {
         totalRows = resultTotal[0].total;
         console.log("total rows: " + totalRows);
     });
-   // totalRows = obtainTotalRows(sqlWhere);
-
+    // totalRows = obtainTotalRows(sqlWhere);
     //agregamos la condicion en la query para ordenar de acuerdo al criterio indicado
     sqlWhere = sqlWhere + " order by " + columna_orden + " " + tipo_orden;
     //agregamos la limitación de pelis x páginas 
     var numeroPagina = calcularFilas(pagina,cantidad);  
-    sqlWhere = sqlWhere + " limit " + numeroPagina + ", " + cantidad;
+    if(numeroPagina ===52){
+        sqlWhere = sqlWhere + " limit " + numeroPagina ;
+    }else{
+        sqlWhere = sqlWhere + " limit " + numeroPagina + ", " + cantidad;
+    }
+   
     console.log(" WHERE : " + sqlWhere);
     //defino la query final para obtener las peliculas a consultar
     sqlSelect = sqlSelect + sqlWhere;
@@ -62,7 +66,7 @@ function calcularFilas(pagina,cantidad){
     var paginaActual=Number(pagina);
     if(paginaActual === 1){
         console.log("es uno");
-       return numPagina = numPagina + 1;
+       return numPagina = Number(cantidad);
     }else{
         //var totalPaginas = Math.ceil(totalFilas/cant);
         var i=1;
@@ -91,10 +95,10 @@ function retriveAllGender(req, res) {
 };
 
 //Buscar pelicula por id
-/* function retriveMovieById(req, res) {
+function retriveMovieById(req, res) {
     var id = req.params.id;
     console.log("id:" + id);
-    var sqlSelect ="select peli.id ,titulo,duracion,director,anio,fecha_lanzamiento,puntuacion, poster,trama, gen.nombre as genero,act.nombre as actor ";
+    var sqlSelect ="select peli.id ,titulo,duracion,director,anio,fecha_lanzamiento,puntuacion, poster,trama, gen.nombre as genero,act.nombre ";
     var sqlFrom = "from genero gen inner join pelicula peli on gen.id =peli.genero_id inner join actor_pelicula actpe on actpe.pelicula_id =peli.id inner join actor act on actpe.actor_id=act.id ";
     var sqlWhere = "where peli.id = " + id;
     sqlSelect = sqlSelect + sqlFrom + sqlWhere;
@@ -103,15 +107,22 @@ function retriveAllGender(req, res) {
         if (errMovieById) {
             console.log("error consultado pelicula por id " + errMovieById.message);
             return res.status(404).send("Uhps,hubo un problema al buscar la pelicula que seleccionaste");
+        } 
+        if (resultMovieById.length == 0) {
+            console.log("No se encontró la pelicula con id: "+ id);
+            return res.status(404).send("No se encontró más información para la película seleccionada");
+        }else{
+            var responseMovieById = {
+                'genero': resultMovieById[0].genero,
+                'pelicula': resultMovieById[0],
+                'actores': resultMovieById
+            };
+            res.send(JSON.stringify(responseMovieById));
         }
-        var responseMovieById = {
-            'genero': resultMovieById.genero,
-            'pelicula': resultMovieById,
-            'actores': resultMovieById.actor
-        };
-        res.send(JSON.stringify(responseMovieById));
+        
+        
     });
-}; */
+}; 
 
 //armamos la query para obtener el total
 /* function obtainTotalRows(sqlWhere) {
@@ -141,6 +152,6 @@ function esUndefined(dato) {
 }
 module.exports = {
     retriveAllMovies: retriveAllMovies,
-    retriveAllGender: retriveAllGender
-    //retriveMovieById: retriveMovieById
+    retriveAllGender: retriveAllGender,
+    retriveMovieById: retriveMovieById
 };

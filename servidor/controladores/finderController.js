@@ -113,9 +113,9 @@ function retriveMovieById(req, res) {
             return res.status(404).send("No se encontró más información para la película seleccionada");
         }else{
             var responseMovieById = {
-                'genero': resultMovieById[0].genero,
+                'genero': resultMovieById[0].genero, //esta info se repite asi que la tomo del primer registro
                 'pelicula': resultMovieById[0],
-                'actores': resultMovieById
+                'actores': resultMovieById //asi me devuelve el array con los actores
             };
             res.send(JSON.stringify(responseMovieById));
         }

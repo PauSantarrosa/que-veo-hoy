@@ -36,17 +36,17 @@ function retriveAllMovies(req, res) {
     //agregamos la condicion en la query para ordenar de acuerdo al criterio indicado
     sqlWhere = sqlWhere + " order by " + columna_orden + " " + tipo_orden;
     //agregamos la limitación de pelis x páginas 
-    var numeroPagina = calcularFilas(pagina,cantidad);  
-    if(numeroPagina ===52){
-        sqlWhere = sqlWhere + " limit " + numeroPagina ;
-    }else{
+    var numeroPagina = calcularFilas(pagina, cantidad);
+    if (numeroPagina === 52) {
+        sqlWhere = sqlWhere + " limit " + numeroPagina;
+    } else {
         sqlWhere = sqlWhere + " limit " + numeroPagina + ", " + cantidad;
     }
-   
+
     console.log(" WHERE : " + sqlWhere);
     //defino la query final para obtener las peliculas a consultar
     sqlSelect = sqlSelect + sqlWhere;
-     console.log(" SELECT: " + sqlSelect);
+    console.log(" SELECT: " + sqlSelect);
     conn.query(sqlSelect, function (errAllMoive, resultAllMoive, fieldsAllMoive) {
         if (errAllMoive) {
             console.log("error consultando la tabla pelicula", errAllMoive.message);
@@ -61,22 +61,22 @@ function retriveAllMovies(req, res) {
 };
 
 //funcion que calcula la cantidad de filas a mostrar segun la pagina recibida
-function calcularFilas(pagina,cantidad){
+function calcularFilas(pagina, cantidad) {
     var numPagina = 0;
-    var paginaActual=Number(pagina);
-    if(paginaActual === 1){
+    var paginaActual = Number(pagina);
+    if (paginaActual === 1) {
         console.log("es uno");
-       return numPagina = Number(cantidad);
-    }else{
+        return numPagina = Number(cantidad);
+    } else {
         //var totalPaginas = Math.ceil(totalFilas/cant);
-        var i=1;
-        while(i < paginaActual ){
-            numPagina = 1 + ( Number(cantidad) * i);
-         i=i+1;
+        var i = 1;
+        while (i < paginaActual) {
+            numPagina = 1 + (Number(cantidad) * i);
+            i = i + 1;
         }
-     return  numPagina;
+        return numPagina;
     }
-    console.log(" pagina : " + pagina + " numPagina : "+ numPagina +"," + cantidad);
+    console.log(" pagina : " + pagina + " numPagina : " + numPagina + "," + cantidad);
 }
 
 //devolvemos todos los generos de peliculas
@@ -98,7 +98,7 @@ function retriveAllGender(req, res) {
 function retriveMovieById(req, res) {
     var id = req.params.id;
     console.log("id:" + id);
-    var sqlSelect ="select peli.id ,titulo,duracion,director,anio,fecha_lanzamiento,puntuacion, poster,trama, gen.nombre as genero,act.nombre ";
+    var sqlSelect = "select peli.id ,titulo,duracion,director,anio,fecha_lanzamiento,puntuacion, poster,trama, gen.nombre as genero,act.nombre ";
     var sqlFrom = "from genero gen inner join pelicula peli on gen.id =peli.genero_id inner join actor_pelicula actpe on actpe.pelicula_id =peli.id inner join actor act on actpe.actor_id=act.id ";
     var sqlWhere = "where peli.id = " + id;
     sqlSelect = sqlSelect + sqlFrom + sqlWhere;
@@ -107,11 +107,11 @@ function retriveMovieById(req, res) {
         if (errMovieById) {
             console.log("error consultado pelicula por id " + errMovieById.message);
             return res.status(404).send("Uhps,hubo un problema al buscar la pelicula que seleccionaste");
-        } 
+        }
         if (resultMovieById.length == 0) {
-            console.log("No se encontró la pelicula con id: "+ id);
+            console.log("No se encontró la pelicula con id: " + id);
             return res.status(404).send("No se encontró más información para la película seleccionada");
-        }else{
+        } else {
             var responseMovieById = {
                 'genero': resultMovieById[0].genero, //esta info se repite asi que la tomo del primer registro
                 'pelicula': resultMovieById[0],
@@ -119,10 +119,45 @@ function retriveMovieById(req, res) {
             };
             res.send(JSON.stringify(responseMovieById));
         }
-        
-        
+
+
     });
-}; 
+};
+
+//Recomendador de pelis
+function retriveRecomendedMovies(req, resp) {
+    console.log("genero: " + req.query.genero);
+    console.log("anioini: " + req.query.anio_inicio);
+    console.log("aniofin: " + req.query.anio_fin);
+    console.log("puntuacion: " + req.query.puntuacion);
+    var genero = req.query.genero;
+    var anio_inicio = req.query.anio_inicio;
+    var anio_fin = req.query.anio_fin;
+    var puntuacion = req.query.puntuacion;
+    var selectRecomended = "select peli.id,titulo,poster,trama, gen.nombre from genero gen, pelicula peli ";
+    var sqlWhereRecomended = "where gen.id = peli.genero_id ";
+    if (genero) {
+        sqlWhereRecomended = sqlWhereRecomended + " and gen.nombre = \'" + genero + "\'";
+    }
+    if (!esUndefined(anio_inicio) && !esUndefined(anio_fin)) {
+        sqlWhereRecomended = sqlWhereRecomended + " and peli.anio between " + anio_inicio + " and " + anio_fin;
+    }
+    if (!esUndefined(puntuacion)) {
+        sqlWhereRecomended = sqlWhereRecomended + " and peli.puntuacion =" + puntuacion;
+    }
+    selectRecomended = selectRecomended + sqlWhereRecomended;
+    console.log(selectRecomended);
+    conn.query(selectRecomended, function (errRecomendedMovie, resultRecomendedMovie, fieldsRecomendedMovie) {
+        if (errRecomendedMovie) {
+            console.log("error consultando la tabla pelicula", errRecomendedMovie.message);
+            return resp.status(404).send("Uhps, hubo un problema al buscar las peliculas");
+        }
+        var recomendedMovies = {
+            'peliculas': resultRecomendedMovie
+        };
+        resp.send(JSON.stringify(recomendedMovies));
+    });
+};
 
 //armamos la query para obtener el total
 /* function obtainTotalRows(sqlWhere) {
@@ -153,5 +188,6 @@ function esUndefined(dato) {
 module.exports = {
     retriveAllMovies: retriveAllMovies,
     retriveAllGender: retriveAllGender,
-    retriveMovieById: retriveMovieById
+    retriveMovieById: retriveMovieById,
+    retriveRecomendedMovies: retriveRecomendedMovies
 };
